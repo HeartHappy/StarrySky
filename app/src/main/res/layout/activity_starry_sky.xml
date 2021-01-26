@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    tools:context=".StarrySkyActivity">
+
+    <com.hearthappy.starryskylib.StarrySkyView
+        android:id="@+id/ssv"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:background="@mipmap/bg_starry_sky"
+        app:BigStarColor="#FF727273"
+        app:BigStarNum="16"
+        app:BigStarRadius="10"
+        app:LittleStarColor="#FF727273"
+        app:LittleStarNum="16"
+        app:LittleStarRadius="5"
+        app:StarColorChange="true"
+        app:StarLineColor="#FF727273"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintTop_toTopOf="parent" />
+</androidx.constraintlayout.widget.ConstraintLayout>

@@ -3,20 +3,28 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
+    android:background="#000"
     android:gravity="center"
     android:orientation="vertical"
-    tools:context=".MainActivity">
+    tools:context=".FireworksActivity">
 
-    <Button
-        android:id="@+id/btnToStarrySky"
+    <ImageView
+        android:id="@+id/ivI"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="星星" />
+        android:src="@mipmap/fireworks_init_state" />
 
-    <Button
-        android:id="@+id/btnToFireworks"
+    <ImageView
+        android:id="@+id/ivE"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="烟花" />
+        android:scaleX="0.1"
+        android:scaleY="0.1"
+        android:src="@mipmap/fireworks_explosion" />
 
+    <Button
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:onClick="start"
+        android:text="执行" />
 </LinearLayout>
