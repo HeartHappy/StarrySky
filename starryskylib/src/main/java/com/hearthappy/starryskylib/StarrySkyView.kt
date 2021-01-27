@@ -21,7 +21,8 @@ class StarrySkyView(context: Context, attrs: AttributeSet?) : View(context, attr
     private var bigStarPaint: Paint = Paint() //大星星画笔
     private var littleStarPaint: Paint = Paint() //小星星画笔
     private var connectingLinePaint: Paint = Paint() //大星星画笔
-    private var colorChange: Boolean = false
+    private var colorChange: Boolean = false //是否支持颜色变化
+    private var isCancelLine: Boolean = false //是否取消连接线
 
     private var bigStarCoordinates = arrayListOf<Point>() //起点集合
     private var bigStarTargetPoints = mutableMapOf<Int, Point>() //目标点集合
@@ -34,20 +35,20 @@ class StarrySkyView(context: Context, attrs: AttributeSet?) : View(context, attr
     private var moveValue = 0f //移动的具体值
     private var isMeasureFinish = false
     private var animatorFinishCount = 0 //动画完成次数
-    private var colorChangeList = arrayListOf("#FF616CA7", "#FF2196F3", "#FF03A9F4", "#FF00BCD4", "#FF009688", "#FF4CAF50", "#FF8BC34A", "#FFCDDC39", "#FFFFEB3B", "#FFFFC107", "#FFFF9800", "#FFFF5722", "#FFF44336", "#FFE91E63", "#FF9C27B0", "#FF673AB7", "#FF727273")
+    private var colorChangeList = arrayListOf("#B2616CA7", "#B22196F3", "#B203A9F4", "#B200BCD4", "#B2009688", "#B24CAF50", "#B28BC34A", "#B2CDDC39", "#B2FFEB3B", "#B2FFC107", "#B2FF9800", "#B2FF5722", "#B2F44336", "#B2E91E63", "#B29C27B0", "#B2673AB7", "#B2727273")
 
     init {
+        setLayerType(LAYER_TYPE_SOFTWARE, null)
         val attributes = context.obtainStyledAttributes(attrs, R.styleable.StarrySkyView)
-        bigStarNum = attributes.getInteger(R.styleable.StarrySkyView_BigStarNum, 5)
-        littleStarNum = attributes.getInteger(R.styleable.StarrySkyView_LittleStarNum, 20)
-        bigStarRadius = attributes.getFloat(R.styleable.StarrySkyView_BigStarRadius, 10f)
-        littleStarRadius = attributes.getFloat(R.styleable.StarrySkyView_LittleStarRadius, 5f)
-        bigStarPaint.color(attributes.getColor(R.styleable.StarrySkyView_BigStarColor, Color.GRAY))
-
-        littleStarPaint.color(attributes.getColor(R.styleable.StarrySkyView_LittleStarColor, Color.GRAY))
-
-        connectingLinePaint.color(attributes.getColor(R.styleable.StarrySkyView_StarLineColor, Color.GRAY))
-        colorChange = attributes.getBoolean(R.styleable.StarrySkyView_StarColorChange, false)
+        bigStarNum = attributes.getInteger(R.styleable.StarrySkyView_bigStarNum, 5)
+        littleStarNum = attributes.getInteger(R.styleable.StarrySkyView_littleStarNum, 20)
+        bigStarRadius = attributes.getFloat(R.styleable.StarrySkyView_bigStarRadius, 10f)
+        littleStarRadius = attributes.getFloat(R.styleable.StarrySkyView_littleStarRadius, 5f)
+        bigStarPaint.color(attributes.getColor(R.styleable.StarrySkyView_bigStarColor, Color.GRAY), bigStarRadius)
+        littleStarPaint.color(attributes.getColor(R.styleable.StarrySkyView_littleStarColor, Color.GRAY), littleStarRadius)
+        connectingLinePaint.color(attributes.getColor(R.styleable.StarrySkyView_starLineColor, Color.GRAY), 0f)
+        colorChange = attributes.getBoolean(R.styleable.StarrySkyView_starColorChange, false)
+        isCancelLine = attributes.getBoolean(R.styleable.StarrySkyView_isCancelLine, false)
         attributes.recycle()
         initPaint()
     }
@@ -101,8 +102,10 @@ class StarrySkyView(context: Context, attrs: AttributeSet?) : View(context, attr
         //        var sign = 0
         for (i in 0 until bigStarNum) {
             canvas.drawCircle(bigStarCoordinates[i].x.toFloat(), bigStarCoordinates[i].y.toFloat(), bigStarRadius, bigStarPaint)
-            for (b in 0 until littleStarNum) {
-                canvas.drawLine(bigStarCoordinates[i].x.toFloat(), bigStarCoordinates[i].y.toFloat(), littleStarCoordinates[b].x.toFloat(), littleStarCoordinates[b].y.toFloat(), connectingLinePaint)
+            if(!isCancelLine){
+                for (b in 0 until littleStarNum) {
+                    canvas.drawLine(bigStarCoordinates[i].x.toFloat(), bigStarCoordinates[i].y.toFloat(), littleStarCoordinates[b].x.toFloat(), littleStarCoordinates[b].y.toFloat(), connectingLinePaint)
+                }
             }
             //显示移动路径
             //canvas.drawPath(movePaths[i], movePathPaint)
@@ -152,10 +155,10 @@ class StarrySkyView(context: Context, attrs: AttributeSet?) : View(context, attr
                             }
                             if (colorChange) {
                                 val color = colorChangeList[animatorFinishCount]
-                                bigStarPaint.color(color)
-                                littleStarPaint.color(color)
-                                connectingLinePaint.color(color)
-                                if (animatorFinishCount++ >= colorChangeList.size) {
+                                bigStarPaint.color(color, bigStarRadius)
+                                littleStarPaint.color(color, littleStarRadius)
+                                connectingLinePaint.color(color, 0f)
+                                if (++animatorFinishCount >= colorChangeList.size) {
                                     animatorFinishCount = 0
                                 }
                             }
@@ -169,14 +172,20 @@ class StarrySkyView(context: Context, attrs: AttributeSet?) : View(context, attr
         }
     }
 
-    private fun Paint.color(color: String) {
+    private fun Paint.color(color: String, radius: Float) {
         this.color = Color.parseColor(color)
         this.isAntiAlias = true
+        if (radius > 0) {
+            this.setShadowLayer(radius + 5f, 0f, 0f, Color.parseColor(color))
+        }
     }
 
-    private fun Paint.color(color: Int) {
+    private fun Paint.color(color: Int, radius: Float) {
         this.color = color
         this.isAntiAlias = true
+        if (radius > 0) {
+            this.setShadowLayer(radius + 5f, 0f, 0f, color)
+        }
     }
 
     companion object {

@@ -1,13 +1,14 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
     <declare-styleable name="StarrySkyView">
-        <attr name="BigStarNum" format="integer" />
-        <attr name="BigStarColor" format="color" />
-        <attr name="BigStarRadius" format="float" />
-        <attr name="LittleStarNum" format="integer" />
-        <attr name="LittleStarColor" format="color" />
-        <attr name="LittleStarRadius" format="float" />
-        <attr name="StarLineColor" format="color" />
-        <attr name="StarColorChange" format="boolean" />
+        <attr name="bigStarNum" format="integer" />
+        <attr name="bigStarColor" format="color" />
+        <attr name="bigStarRadius" format="float" />
+        <attr name="littleStarNum" format="integer" />
+        <attr name="littleStarColor" format="color" />
+        <attr name="littleStarRadius" format="float" />
+        <attr name="starLineColor" format="color" />
+        <attr name="starColorChange" format="boolean" />
+        <attr name="isCancelLine" format="boolean" />
     </declare-styleable>
 </resources>
