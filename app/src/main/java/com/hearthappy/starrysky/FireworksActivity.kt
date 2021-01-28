@@ -10,8 +10,5 @@ class FireworksActivity : AppCompatActivity() {
         super.onCreate(savedInstanceState)
         window.addFlags(WindowManager.LayoutParams.FLAG_FULLSCREEN)
         setContentView(R.layout.activity_fireworks)
-        btnReStart.setOnClickListener {
-            fv.startReadQueue()
-        }
     }
 }

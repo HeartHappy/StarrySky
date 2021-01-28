@@ -19,12 +19,20 @@ import java.util.concurrent.LinkedBlockingQueue
 class FireworksView(context: Context, attrs: AttributeSet?) : View(context, attrs) {
 
 
-    private val startBitmap: Bitmap = BitmapFactory.decodeResource(resources, R.mipmap.fireworks_init_state)
+    private val startBitmap: Bitmap =
+        BitmapFactory.decodeResource(resources, R.mipmap.fireworks_init_state)
 
     private var initFinish = false
     private var finishCount = 0
 
-    private var firResIds = mutableListOf(R.mipmap.fir1, R.mipmap.fir2, R.mipmap.fir3, R.mipmap.fir4, R.mipmap.fir5)
+    private var firResIds = mutableListOf(
+        R.mipmap.fir1,
+        R.mipmap.fir2,
+        R.mipmap.fir3,
+        R.mipmap.fir4,
+        R.mipmap.fir5,
+        R.mipmap.fir6
+    )
     private var totalCount = 100 //烟花数量
     private var explosionRange: Int = 0
     private var truncationCount = 16f //贝塞尔曲线截断个数
@@ -71,7 +79,12 @@ class FireworksView(context: Context, attrs: AttributeSet?) : View(context, attr
      * @param y Int  贝塞尔曲线长度
      * @param pointCount Int :二阶贝塞尔，相对的点数。根据相对点个数平均截取出贝塞尔曲线（例如：pointCount=8，贝塞尔曲线分为8段）
      */
-    private fun rQuadToVerOffset(path: Path, dx: Float, y: Int, @FloatRange(from = 4.0, to = 80.0) pointCount: Float) {
+    private fun rQuadToVerOffset(
+        path: Path,
+        dx: Float,
+        y: Int,
+        @FloatRange(from = 4.0, to = 80.0) pointCount: Float
+    ) {
         for (j in 0 until pointCount.toInt() / 4) {
             path.rQuadTo(-dx, y / pointCount, 0f, y / (pointCount / 2))
             path.rQuadTo(+dx, y / pointCount, 0f, y / (pointCount / 2))
@@ -88,10 +101,16 @@ class FireworksView(context: Context, attrs: AttributeSet?) : View(context, attr
                         when (fm.fireworksStates[i]) {
                             //升起状态
                             FireworksState.RISE -> {
-                                fm.movePaths[i]?.let {
+                                /*fm.movePaths[i]?.let {
                                     canvas.drawPath(it, paint)
+                                }*/
+                                fm.moveValues[i]?.let {
+                                    fm.movePathMeasures[i]?.getMatrix(
+                                        it,
+                                        riseMatrix,
+                                        PathMeasure.TANGENT_MATRIX_FLAG or PathMeasure.POSITION_MATRIX_FLAG
+                                    )
                                 }
-                                fm.moveValues[i]?.let { fm.movePathMeasures[i]?.getMatrix(it, riseMatrix, PathMeasure.TANGENT_MATRIX_FLAG or PathMeasure.POSITION_MATRIX_FLAG) }
                                 riseMatrix.preRotate(90f, 0f, 0f)
                                 riseMatrix.preScale(0.4f, 0.4f)
                                 canvas.drawBitmap(startBitmap, riseMatrix, paint)
@@ -101,8 +120,14 @@ class FireworksView(context: Context, attrs: AttributeSet?) : View(context, attr
                                 fm.endPoints[i]?.let {
                                     fm.scaleValues[i]?.let { sv ->
                                         fm.firResBitmaps[i]?.let { bitmap ->
-                                            riseMatrix.preTranslate(it.x.toFloat() - bitmap.width / 2 * sv, it.y.toFloat() - bitmap.height / 2 * sv)
+                                            riseMatrix.preTranslate(
+                                                it.x.toFloat() - bitmap.width / 2 * sv,
+                                                it.y.toFloat() - bitmap.height / 2 * sv
+                                            )
                                             riseMatrix.preScale(sv, sv)
+                                            fm.alphaValues[i]?.let { alphaValue ->
+                                                paint.alpha = alphaValue
+                                            }
                                             canvas.drawBitmap(bitmap, riseMatrix, paint)
                                         }
                                     }
@@ -123,7 +148,7 @@ class FireworksView(context: Context, attrs: AttributeSet?) : View(context, attr
     private fun changeColorFilter(paint: Paint) {
         val colorMatrix = ColorMatrix()
         val colorRGB = (0..2).random()
-        val colorRotate = (0..255).random()
+        val colorRotate = (50..255).random()
         colorMatrix.setRotate(colorRGB, colorRotate.toFloat())
         paint.colorFilter = ColorMatrixColorFilter(colorMatrix)
     }
@@ -132,13 +157,16 @@ class FireworksView(context: Context, attrs: AttributeSet?) : View(context, attr
     /**
      * 读取队列
      */
-    fun startReadQueue() {
+    private fun startReadQueue() {
         if (initFinish) {
             Log.d(TAG, "startRiseAnimator: ${queue.size}")
             for (i in 0 until queue.size) {
                 fireworksManages[i] = queue.take()
                 fireworksManages[i]?.let { fm ->
-                    fm.firResBitmaps[i] = BitmapFactory.decodeResource(resources, firResIds[(0 until 5).random()])
+                    fm.firResBitmaps[i] = BitmapFactory.decodeResource(
+                        resources,
+                        firResIds[(0 until firResIds.size).random()]
+                    )
                     fm.movePathMeasures[i]?.let { pm ->
                         fm.fireworksStates[i] = FireworksState.RISE
                         fm.firPaints[i]?.let {
@@ -186,8 +214,26 @@ class FireworksView(context: Context, attrs: AttributeSet?) : View(context, attr
                 postInvalidate()
             }
             addListener(onEnd = {
-                fm.firPaints[i]?.color = Color.TRANSPARENT
+                startFadeOutAnimator(fm, i)
+            })
+            duration = 1000
+            start()
+        }
+    }
+
+    /**
+     * 消失动画
+     * @param fm FireworksManage
+     * @param i Int
+     */
+    private fun startFadeOutAnimator(fm: FireworksManage, i: Int) {
+        ValueAnimator.ofInt(255, 0).apply {
+            interpolator = DecelerateInterpolator()
+            addUpdateListener {
+                fm.alphaValues[i] = animatedValue as Int
                 postInvalidate()
+            }
+            addListener(onEnd = {
                 //爆炸结束计算完成数量
                 if (++finishCount >= totalCount) {
                     finishCount = 0
@@ -224,9 +270,11 @@ class FireworksView(context: Context, attrs: AttributeSet?) : View(context, attr
         val riseMatrixList = mutableMapOf<Int, Matrix>()
         val moveValues = mutableMapOf<Int, Float>()
         val scaleValues = mutableMapOf<Int, Float>()
+        val alphaValues = mutableMapOf<Int, Int>()
         var fireworksStates = mutableMapOf<Int, FireworksState>()
         val firPaints = mutableMapOf<Int, Paint>()
         val firResBitmaps = mutableMapOf<Int, Bitmap>()
+
 
         //将每个烟花添加至消息队列中
         fun into() {
