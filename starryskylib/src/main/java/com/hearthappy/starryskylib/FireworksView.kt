@@ -22,16 +22,25 @@ import java.util.concurrent.LinkedBlockingQueue
 class FireworksView(context: Context, attrs: AttributeSet?) : View(context, attrs) {
 
 
-    private val startBitmap: Bitmap = BitmapFactory.decodeResource(resources, R.mipmap.fireworks_init_state)
+    private val startBitmap: Bitmap =
+        BitmapFactory.decodeResource(resources, R.mipmap.fireworks_init_state)
 
     private var initFinish = false
     private var finishCount = 0
 
-    private var firResIds = mutableListOf(R.mipmap.fir1, R.mipmap.fir2, R.mipmap.fir3, R.mipmap.fir4, R.mipmap.fir5, R.mipmap.fir6, R.mipmap.fir7)
+    private var firResIds = mutableListOf(
+        R.mipmap.fir1,
+        R.mipmap.fir2,
+        R.mipmap.fir3,
+        R.mipmap.fir4,
+        R.mipmap.fir5,
+        R.mipmap.fir6,
+        R.mipmap.fir7
+    )
     private var materialFirCount = 100 //素材烟花数量
     private var heartFirCount = 5 //爱心烟花数量
     private val totalCount = materialFirCount + heartFirCount //烟花总数量
-    private var explosionRange: Int = 0
+    private var explosionRange: Float = 0f
     private var truncationCount = 16f //贝塞尔曲线截断个数
     private val fireworksManages = mutableMapOf<Int, FireworksManage>()
     private val fireworksDuration = 30 * 1000L
@@ -58,7 +67,12 @@ class FireworksView(context: Context, attrs: AttributeSet?) : View(context, attr
      * @param y Int  贝塞尔曲线长度
      * @param pointCount Int :二阶贝塞尔，相对的点数。根据相对点个数平均截取出贝塞尔曲线（例如：pointCount=8，贝塞尔曲线分为8段）
      */
-    private fun rQuadToVerOffset(path: Path, dx: Float, y: Int, @FloatRange(from = 4.0, to = 80.0) pointCount: Float) {
+    private fun rQuadToVerOffset(
+        path: Path,
+        dx: Float,
+        y: Int,
+        @FloatRange(from = 4.0, to = 80.0) pointCount: Float
+    ) {
         for (j in 0 until pointCount.toInt() / 4) {
             path.rQuadTo(-dx, y / pointCount, 0f, y / (pointCount / 2))
             path.rQuadTo(+dx, y / pointCount, 0f, y / (pointCount / 2))
@@ -75,36 +89,11 @@ class FireworksView(context: Context, attrs: AttributeSet?) : View(context, attr
                         when (fm.fireworksStates[i]) {
                             //升起状态
                             FireworksState.RISE -> {
-                                fm.moveValues[i]?.let {
-                                    fm.movePathMeasures[i]?.getMatrix(it, riseMatrix, PathMeasure.TANGENT_MATRIX_FLAG or PathMeasure.POSITION_MATRIX_FLAG)
-                                }
-                                riseMatrix.preRotate(90f, 0f, 0f)
-                                riseMatrix.preScale(0.4f, 0.4f)
-                                canvas.drawBitmap(startBitmap, riseMatrix, paint)
+                                drawFirRise(fm, i, riseMatrix, canvas, paint)
                             }
                             //爆炸状态
                             FireworksState.Explosion -> {
-                                fm.endPoints[i]?.let { point ->
-                                    fm.scaleValues[i]?.let { sv ->
-                                        //渲染bitmap烟花
-                                        if (i < materialFirCount) {
-                                            fm.firResBitmaps[i]?.let { bitmap ->
-                                                riseMatrix.preTranslate(point.x.toFloat() - bitmap.width / 2 * sv, point.y.toFloat() - bitmap.height / 2 * sv)
-                                                riseMatrix.preScale(sv, sv)
-                                                //如果存在缩放值变化
-                                                fm.alphaValues[i]?.let { alphaValue ->
-                                                    paint.alpha = alphaValue
-                                                }
-                                                canvas.drawBitmap(bitmap, riseMatrix, paint)
-                                            }
-                                            //渲染Path路径烟花
-                                        } else {
-                                            fm.firPaths[i]?.let { path ->
-                                                SvgOutputTools.drawPathSpecifiedOutput(canvas, path, point.x, point.y, paint, sv)
-                                            }
-                                        }
-                                    }
-                                }
+                                drawFirExplosion(fm, i, paint, riseMatrix, canvas)
                             }
                             else -> {
                             }
@@ -112,6 +101,133 @@ class FireworksView(context: Context, attrs: AttributeSet?) : View(context, attr
                     }
                 }
             }
+        }
+    }
+
+    /**
+     * 绘制烟花爆炸
+     * @param fm FireworksManage
+     * @param i Int
+     * @param paint Paint
+     * @param riseMatrix Matrix
+     * @param canvas Canvas
+     */
+    private fun drawFirExplosion(
+        fm: FireworksManage,
+        i: Int,
+        paint: Paint,
+        riseMatrix: Matrix,
+        canvas: Canvas
+    ) {
+        fm.endPoints[i]?.let { point ->
+            fm.scaleValues[i]?.let { sv ->
+                //如果存在缩放值变化
+                fm.alphaValues[i]?.let { alphaValue ->
+                    paint.alpha = alphaValue
+                }
+                //渲染bitmap烟花
+                if (i < materialFirCount) {
+                    Log.d(TAG, "onDraw: for bitmap:$i")
+                    drawFirExplosionByBitmap(
+                        fm,
+                        i,
+                        riseMatrix,
+                        point,
+                        sv,
+                        canvas,
+                        paint
+                    )
+                    //渲染Path路径烟花
+                } else {
+                    Log.d(TAG, "onDraw:for path: $i")
+                    drawFirExplosionByPath(fm, i, canvas, point, paint, sv)
+                }
+            }
+        }
+    }
+
+    /**
+     * 绘制烟花升起
+     * @param fm FireworksManage
+     * @param i Int
+     * @param riseMatrix Matrix
+     * @param canvas Canvas
+     * @param paint Paint
+     */
+    private fun drawFirRise(
+        fm: FireworksManage,
+        i: Int,
+        riseMatrix: Matrix,
+        canvas: Canvas,
+        paint: Paint
+    ) {
+        fm.moveValues[i]?.let {
+            fm.movePathMeasures[i]?.getMatrix(
+                it,
+                riseMatrix,
+                PathMeasure.TANGENT_MATRIX_FLAG or PathMeasure.POSITION_MATRIX_FLAG
+            )
+        }
+        riseMatrix.preRotate(90f, 0f, 0f)
+        riseMatrix.preScale(0.4f, 0.4f)
+        canvas.drawBitmap(startBitmap, riseMatrix, paint)
+    }
+
+    /**
+     * 绘制烟花根据路径
+     * @param fm FireworksManage
+     * @param i Int
+     * @param canvas Canvas
+     * @param point Point
+     * @param paint Paint
+     * @param sv Float
+     */
+    private fun drawFirExplosionByPath(
+        fm: FireworksManage,
+        i: Int,
+        canvas: Canvas,
+        point: Point,
+        paint: Paint,
+        sv: Float
+    ) {
+        fm.firPaths[i]?.let { path ->
+            SvgOutputTools.drawPathSpecifiedOutput(
+                canvas,
+                path,
+                point.x,
+                point.y,
+                paint,
+                sv
+            )
+        }
+    }
+
+    /**
+     * 绘制烟花根据bitmap
+     * @param fm FireworksManage
+     * @param i Int
+     * @param riseMatrix Matrix
+     * @param point Point
+     * @param sv Float
+     * @param canvas Canvas
+     * @param paint Paint
+     */
+    private fun drawFirExplosionByBitmap(
+        fm: FireworksManage,
+        i: Int,
+        riseMatrix: Matrix,
+        point: Point,
+        sv: Float,
+        canvas: Canvas,
+        paint: Paint
+    ) {
+        fm.firResBitmaps[i]?.let { bitmap ->
+            riseMatrix.preTranslate(
+                point.x.toFloat() - bitmap.width / 2 * sv,
+                point.y.toFloat() - bitmap.height / 2 * sv
+            )
+            riseMatrix.preScale(sv, sv)
+            canvas.drawBitmap(bitmap, riseMatrix, paint)
         }
     }
 
@@ -177,15 +293,21 @@ class FireworksView(context: Context, attrs: AttributeSet?) : View(context, attr
                 fireworksManages[i] = queue.take()
                 fireworksManages[i]?.let { fm ->
                     if (i < materialFirCount) {
+                        Log.d(TAG, "startReadQueue: 读取队列 for bitmap:$i")
                         //解析资源文件
-                        val decodeResource = BitmapFactory.decodeResource(resources, firResIds[(0 until firResIds.size).random()])
+                        val decodeResource = BitmapFactory.decodeResource(
+                            resources,
+                            firResIds[(0 until firResIds.size).random()]
+                        )
                         fm.firResBitmaps[i] = decodeResource
-                        fm.movePathMeasures[i]?.let { pm ->
-                            fm.fireworksStates[i] = FireworksState.RISE
-                            startRiseAnimator(pm, fm, i)
-                        }
+
                     } else {
+                        Log.d(TAG, "startReadQueue: 读取队列 for path:$i")
                         fm.firPaths[i] = PathParser.createPathFromPathData(SvgPaths.heartPath2)
+                    }
+                    fm.movePathMeasures[i]?.let { pm ->
+                        fm.fireworksStates[i] = FireworksState.RISE
+                        startRiseAnimator(pm, fm, i)
                     }
                 }
             }
@@ -220,12 +342,17 @@ class FireworksView(context: Context, attrs: AttributeSet?) : View(context, attr
         Log.d(TAG, "startExplosionAnimator: 执行爆炸动画:$i")
         fm.fireworksStates[i] = FireworksState.Explosion
         fm.firResBitmaps[i]?.let {
-            fm.firPaints[i]?.setMaskFilter(BlurMaskFilter(it.width / 2f, BlurMaskFilter.Blur.NORMAL))
+            fm.firPaints[i]?.setMaskFilter(
+                BlurMaskFilter(
+                    it.width / 2f,
+                    BlurMaskFilter.Blur.NORMAL
+                )
+            )
         }
 
         //爆炸范围
-        explosionRange = (1..2).random()
-        ValueAnimator.ofFloat(0f, explosionRange.toFloat()).apply {
+        explosionRange = if (i < materialFirCount) (1..2).random().toFloat() else 0.5f
+        ValueAnimator.ofFloat(0f, explosionRange).apply {
             interpolator = DecelerateInterpolator()
             addUpdateListener {
                 fm.scaleValues[i] = animatedValue as Float

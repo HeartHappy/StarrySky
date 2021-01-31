@@ -41,7 +41,6 @@ object SvgOutputTools {
      * @param canvas Canvas
      */
     fun drawPathCenterOutput(canvas: Canvas, path: Path, view: View, paint: Paint = Paint(), scale: Float = 1f) {
-        canvas.save()
         //PathPoint(minX=76.434265, maxX=938.5672, minY=185.15251, maxY=934.6263)
         val centerX = view.width / 2
         val centerY = view.height / 2
@@ -59,6 +58,7 @@ object SvgOutputTools {
      * @param scale Float 缩放值，如果使用到缩放动画需要传入scale值
      */
     fun drawPathSpecifiedOutput(canvas: Canvas, path: Path, centerX: Int, centerY: Int, paint: Paint = Paint(), scale: Float = 1f) {
+        canvas.save()
         val pathPoint = computerPathPoint(path)
         //svg宽度
         val svgWidth = (pathPoint.maxX - pathPoint.minX) * scale
