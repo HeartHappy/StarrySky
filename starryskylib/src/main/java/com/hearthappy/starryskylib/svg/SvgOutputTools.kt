@@ -6,6 +6,7 @@ import android.graphics.Path
 import android.graphics.PathMeasure
 import android.view.View
 
+
 /**
  * Created Date 2021/1/29.
  * @author ChenRui
@@ -40,11 +41,11 @@ object SvgOutputTools {
      * @param path Path
      * @param canvas Canvas
      */
-    fun drawPathCenterOutput(canvas: Canvas, path: Path, view: View, paint: Paint = Paint(), scale: Float = 1f) {
+    fun drawPathCenterOutput(canvas: Canvas, path: Path, view: View, paint: Paint = Paint(), scale: Float = 1f, block: (left: Float, top: Float, right: Float, bottom: Float) -> Unit = { _, _, _, _ -> }) {
         //PathPoint(minX=76.434265, maxX=938.5672, minY=185.15251, maxY=934.6263)
         val centerX = view.width / 2
         val centerY = view.height / 2
-        drawPathSpecifiedOutput(canvas, path, centerX, centerY, paint, scale)
+        drawPathSpecifiedOutput(canvas, path, centerX, centerY, scale, paint, block)
     }
 
 
@@ -57,7 +58,7 @@ object SvgOutputTools {
      * @param paint Paint 画笔
      * @param scale Float 缩放值，如果使用到缩放动画需要传入scale值
      */
-    fun drawPathSpecifiedOutput(canvas: Canvas, path: Path, centerX: Int, centerY: Int, paint: Paint = Paint(), scale: Float = 1f) {
+    fun drawPathSpecifiedOutput(canvas: Canvas, path: Path, centerX: Int, centerY: Int, scale: Float = 1f, paint: Paint = Paint(), block: (left: Float, top: Float, right: Float, bottom: Float) -> Unit= { _, _, _, _ -> }) {
         canvas.save()
         val pathPoint = computerPathPoint(path)
         //svg宽度
@@ -70,6 +71,7 @@ object SvgOutputTools {
         if (scale != 1f) {
             canvas.scale(scale, scale)
         }
+        block(pathPoint.minX, pathPoint.minY, pathPoint.maxX, pathPoint.maxY)
         canvas.drawPath(path, paint)
         canvas.restore()
     }

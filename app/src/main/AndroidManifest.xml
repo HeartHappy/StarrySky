@@ -11,6 +11,7 @@
         android:theme="@style/Theme.StarrySky">
         <activity
             android:name=".FireworksActivity"
+            android:screenOrientation="landscape"
             >
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
