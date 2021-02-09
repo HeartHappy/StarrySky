@@ -11,4 +11,29 @@
         <attr name="starColorChange" format="boolean" />
         <attr name="isCancelLine" format="boolean" />
     </declare-styleable>
+
+    <declare-styleable name="FireworksView">
+        <attr name="firTotalDuration" format="integer" />
+        <attr name="firTruncationCount" format="float" />
+        <attr name="firTotalCount" format="integer" />
+        <attr name="firTextVerticalSpacing" format="integer" />
+        <attr name="firTitleSize" format="float" />
+        <attr name="firContentSize" format="float" />
+        <attr name="firTitleLastLineNullCharNum" format="integer" />
+        <attr name="firContentLastLineNullCharNum" format="integer" />
+        <attr name="firTitleAnimDuration" format="integer" />
+        <attr name="firContentAnimDuration" format="integer" />
+        <attr name="firTitleText" format="reference" />
+        <attr name="firContentText" format="reference" />
+        <attr name="firEndText" format="string" />
+        <attr name="firEndTextVerticalOffset" format="integer" />
+        <attr name="firAnimatorType">
+            <enum name="title" value="1" />
+            <enum name="content" value="2" />
+            <enum name="fireworks" value="3" />
+            <enum name="fireworks_path" value="4" />
+            <enum name="flame_heart" value="5" />
+            <enum name="segmentation" value="6" />
+        </attr>
+    </declare-styleable>
 </resources>

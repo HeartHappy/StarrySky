@@ -25,16 +25,23 @@ import java.util.concurrent.LinkedBlockingQueue
 @Suppress("DEPRECATION")
 class FireworksView(context: Context, attrs: AttributeSet?) : View(context, attrs) {
     //可定义属性
-    private var truncationCount = 16f //贝塞尔曲线截断个数
-    private val fireworksDuration = 30 * 1000L //烟花播放总时长，30秒结束
-    private var outputText = "挚爱颖儿"
-    private val totalCount = 100 //烟花总数量
-    private var textVerticalSpacing = 36
+
+    private var titles: Array<String>? = null
     private var titleSize = 72f //标题大小
-    private var contentSize = 48f //内容大小
     private var titleLastLineNullCharNum = 2 //标题最后一行空出字符数
+    private var titleAnimDuration = 5 * 1000L
+    private var contents: Array<String>? = null
+    private var contentSize = 48f //内容大小
     private var contentLastLineNullCharNum = 8 //内容最后一行空出字符数
+    private var contentAnimDuration = 10 * 1000L
+    private var textVerticalSpacing = 36 //文本垂直行间距
+    private var endText: String = ""
+    private var endTextVerticalOffset = 0 //结束文本垂直偏移量，默认居中
+    private var totalCount = 100 //烟花总数量
+    private var truncationCount = 16f //贝塞尔曲线截断个数
+    private var fireworksDuration = 30 * 1000L //烟花播放总时长，30秒结束
     private var animatorType = AnimatorType.TITLE //动画类型
+    var animatorEndListener: AnimatorEndListener? = null
 
     //共用属性
     private var pathMatrix = Matrix()
@@ -44,12 +51,11 @@ class FireworksView(context: Context, attrs: AttributeSet?) : View(context, attr
     private var titlePaint: Paint = Paint()
     private var titleAlphaValue = 0
 
-
     //烟花
     private val riseBitmap: Bitmap = BitmapFactory.decodeResource(resources, R.mipmap.fireworks_init_state)
     private var initFinish = false //是否完成界面初始化
     private var finishCount = 0 //烟花播放个数
-    private var firResIds = mutableListOf(R.mipmap.fir1, R.mipmap.fir2, R.mipmap.fir3, R.mipmap.fir4, R.mipmap.fir5, R.mipmap.fir6, R.mipmap.fir7)
+    private var firResIds = mutableListOf(R.mipmap.fir1, R.mipmap.fir2, R.mipmap.fir3, R.mipmap.fir4, R.mipmap.fir5, R.mipmap.fir6)
     private var explosionRange: Float = 0f //爆炸范围
     private val fireworksManages = mutableMapOf<Int, FireworksManage>()
 
@@ -62,7 +68,6 @@ class FireworksView(context: Context, attrs: AttributeSet?) : View(context, attr
     private val firHeartPathSplitNumber = 10
 
     //焰心升起
-
     private lateinit var flameHeartPaint: Paint
     private lateinit var flameHeartBitmap: Bitmap
 
@@ -79,14 +84,58 @@ class FireworksView(context: Context, attrs: AttributeSet?) : View(context, attr
     private lateinit var outputTextRectF: RectF
     private var measureTextWidth = 0f
     private var outputTextMoveValue = 0f
-    private val flameHeartAnimDuration = 5 * 1000L //焰心动画时长
+
+    private val flameHeartAnimDuration = 3 * 1000L //焰心动画时长
 
 
     init {
+        attrs?.let {
+            val attributes = context.obtainStyledAttributes(attrs, R.styleable.FireworksView)
+            titles = charArrayToStringArray(attributes.getTextArray(R.styleable.FireworksView_firTitleText))
+            contents = charArrayToStringArray(attributes.getTextArray(R.styleable.FireworksView_firContentText))
+            endText = attributes.getString(R.styleable.FireworksView_firEndText).toString()
+            truncationCount = attributes.getFloat(R.styleable.FireworksView_firTruncationCount, 16f)
+            totalCount = attributes.getInteger(R.styleable.FireworksView_firTotalCount, 100)
+            textVerticalSpacing = attributes.getInteger(R.styleable.FireworksView_firTextVerticalSpacing, 36)
+            titleSize = attributes.getFloat(R.styleable.FireworksView_firTitleSize, 72f)
+            contentSize = attributes.getFloat(R.styleable.FireworksView_firContentSize, 48f)
+            titleLastLineNullCharNum = attributes.getInteger(R.styleable.FireworksView_firTitleLastLineNullCharNum, 2)
+            contentLastLineNullCharNum = attributes.getInteger(R.styleable.FireworksView_firContentLastLineNullCharNum, 8)
+            fireworksDuration = attributes.getInteger(R.styleable.FireworksView_firTotalDuration, 30) * 1000L
+            titleAnimDuration = attributes.getInteger(R.styleable.FireworksView_firTitleAnimDuration, 5) * 1000L
+            contentAnimDuration = attributes.getInteger(R.styleable.FireworksView_firContentAnimDuration, 10) * 1000L
+            endTextVerticalOffset = attributes.getInteger(R.styleable.FireworksView_firEndTextVerticalOffset, 0)
+            animatorType = toAnimatorType(attributes.getInt(R.styleable.FireworksView_firAnimatorType, 1))
+            attributes.recycle()
+        }
         titlePaint.color = resources.getColor(R.color.color_yellow)
         titlePaint.style = Paint.Style.FILL
         titlePaint.isAntiAlias = true
         titlePaint.textSize = titleSize
+    }
+
+
+    /**
+     * CharSequence数组转换为String数组
+     * @param titleArray Array<CharSequence>
+     * @return Array<String>
+     */
+    private fun charArrayToStringArray(titleArray: Array<CharSequence>): Array<String> {
+        return Array(titleArray.size) {
+            titleArray[it].toString()
+        }
+    }
+
+    private fun toAnimatorType(type: Int): AnimatorType {
+        return when (type) {
+            1 -> AnimatorType.TITLE
+            2 -> AnimatorType.CONTENT
+            3 -> AnimatorType.FIREWORKS
+            4 -> AnimatorType.FIREWORKS_PATH
+            5 -> AnimatorType.FLAME_HEART
+            6 -> AnimatorType.SEGMENTATION
+            else -> AnimatorType.TITLE
+        }
     }
 
     private inline fun valueChange(duration: Long = 1000L, delay: Long = 0L, interpolator: BaseInterpolator = LinearInterpolator(), crossinline updateValue: (updateValue: Float) -> Unit = {}, crossinline onEnd: () -> Unit = {}, vararg values: Float) {
@@ -136,6 +185,7 @@ class FireworksView(context: Context, attrs: AttributeSet?) : View(context, attr
             postDelayed({ executionAnimator() }, 1000)
         }
     }
+
 
     private fun checkLateinitIsInit(): Boolean {
         return when (animatorType) {
@@ -192,17 +242,16 @@ class FireworksView(context: Context, attrs: AttributeSet?) : View(context, attr
         fireworksManages[i] = fireworksManage
     }
 
+    //titles.toTypedArray()
     override fun onDraw(canvas: Canvas) {
         if (checkLateinitIsInit()) {
             when (animatorType) {
                 AnimatorType.TITLE -> {
-                    val titles = resources.getStringArray(R.array.title_first)
-                    drawTextByStringArray(titles, canvas, titleLastLineNullCharNum)
+                    titles?.let { drawTextByStringArray(it, canvas, titleLastLineNullCharNum) }
                 }
                 AnimatorType.CONTENT -> {
-                    val contents = resources.getStringArray(R.array.title_content)
                     titlePaint.textSize = contentSize
-                    drawTextByStringArray(contents, canvas, contentLastLineNullCharNum)
+                    contents?.let { drawTextByStringArray(it, canvas, contentLastLineNullCharNum) }
                 }
                 AnimatorType.FIREWORKS -> {
                     for (i in 0 until totalCount) {
@@ -243,7 +292,7 @@ class FireworksView(context: Context, attrs: AttributeSet?) : View(context, attr
                         outputTextRectF.top = 0f
                         outputTextRectF.right = changeRight
                         canvas.clipRect(outputTextRectF)
-                        canvas.drawTextOnPath(outputText, outputTextPath, (outputPathMeasure.length - measureTextWidth) / 2, 0f, flameHeartPaint)
+                        canvas.drawTextOnPath(endText, outputTextPath, (outputPathMeasure.length - measureTextWidth) / 2, endTextVerticalOffset.toFloat(), flameHeartPaint)
                     }
                 }
             }
@@ -284,7 +333,7 @@ class FireworksView(context: Context, attrs: AttributeSet?) : View(context, attr
      * @param titles Array<out String>
      * @param canvas Canvas
      */
-    private fun drawTextByStringArray(titles: Array<out String>, canvas: Canvas, lastLineNullCharNum: Int) {
+    private fun drawTextByStringArray(titles: Array<String>, canvas: Canvas, lastLineNullCharNum: Int) {
         //记录上一个的位置
         var firstLocalX = 0f
         titlePaint.alpha = titleAlphaValue
@@ -292,14 +341,15 @@ class FireworksView(context: Context, attrs: AttributeSet?) : View(context, attr
             val x = width / 2f - titlePaint.measureText(s) / 2
             val y = height / 2f - titlePaint.textSize * titles.size / 2 + index * (titlePaint.textSize + textVerticalSpacing)
             when (index) {
+                //第一行
+                0 -> {
+                    firstLocalX = x
+                    canvas.drawText(s, firstLocalX, y, titlePaint)
+                }
                 titles.lastIndex -> {
                     //空两格
                     val space = titlePaint.measureText(s) / s.length * lastLineNullCharNum
                     canvas.drawText(s, firstLocalX + space, y, titlePaint)
-                }
-                0 -> {
-                    firstLocalX = x
-                    canvas.drawText(s, firstLocalX, y, titlePaint)
                 }
                 else -> {
                     canvas.drawText(s, firstLocalX, y, titlePaint)
@@ -382,17 +432,23 @@ class FireworksView(context: Context, attrs: AttributeSet?) : View(context, attr
      * 启动标题动画
      */
     private fun startTitleAnimator() {
-        valueChange(10 * 1000, updateValue = { titleAlphaValue = it.toInt() }, onEnd = { startContentAnimator() }, values = floatArrayOf(0f, 255f, 0f))
+        valueChange(titleAnimDuration, updateValue = { titleAlphaValue = it.toInt() }, onEnd = {
+            animatorEndListener?.onTitleAnimEnd()
+            startContentAnimator()
+        }, values = floatArrayOf(0f, 255f, 0f))
     }
 
     /**
      * 启动内容动画
      */
     private fun startContentAnimator() {
-        valueChange(10 * 1000, updateValue = {
+        valueChange(contentAnimDuration, updateValue = {
             animatorType = AnimatorType.CONTENT
             titleAlphaValue = it.toInt()
-        }, onEnd = { startFireworksAnimator() }, values = floatArrayOf(0f, 255f, 0f))
+        }, onEnd = {
+            animatorEndListener?.onContentAnimEnd()
+            startFireworksAnimator()
+        }, values = floatArrayOf(0f, 255f, 0f))
     }
 
     /**
@@ -435,7 +491,10 @@ class FireworksView(context: Context, attrs: AttributeSet?) : View(context, attr
      */
     private fun startFlameHeartAnimator() {
         initFlameHeart()
-        valueChange(duration = flameHeartAnimDuration, updateValue = { pathMoveValue = it }, onEnd = { startSplitAnimator() }, values = floatArrayOf(height.toFloat(), 0f))
+        valueChange(duration = flameHeartAnimDuration, updateValue = { pathMoveValue = it }, onEnd = {
+            animatorEndListener?.onFlameHeartPathAnimEnd()
+            startSplitAnimator()
+        }, values = floatArrayOf(height.toFloat(), 0f))
     }
 
     /**
@@ -443,7 +502,10 @@ class FireworksView(context: Context, attrs: AttributeSet?) : View(context, attr
      */
     private fun startSplitAnimator() {
         initSplitLine()
-        valueChange(flameHeartAnimDuration, updateValue = { pathMoveValue = it }, onEnd = { splitOutputTextAnimator() }, values = floatArrayOf(width / 2f, 0f))
+        valueChange(flameHeartAnimDuration, updateValue = { pathMoveValue = it }, onEnd = {
+            animatorEndListener?.onSegmentationAnimEnd()
+            splitOutputTextAnimator()
+        }, values = floatArrayOf(width / 2f, 0f))
     }
 
     /**
@@ -459,7 +521,7 @@ class FireworksView(context: Context, attrs: AttributeSet?) : View(context, attr
                 //解析资源文件
                 fm.firResBitmap = when (animatorType) {
                     AnimatorType.FIREWORKS_PATH -> {
-                        BitmapFactory.decodeResource(resources, firResIds[6])
+                        BitmapFactory.decodeResource(resources, firResIds[firResIds.size - 1])
                     }
                     else -> {
                         BitmapFactory.decodeResource(resources, firResIds[(0 until firResIds.size).random()])
@@ -468,7 +530,7 @@ class FireworksView(context: Context, attrs: AttributeSet?) : View(context, attr
 
                 fm.movePathMeasure.let { pm ->
                     fm.fireworksState = FireworksState.RISE
-                    valueChange(delay = if(animatorType==AnimatorType.FIREWORKS_PATH) 0 else (1000..fireworksDuration).random(), interpolator = DecelerateInterpolator(), updateValue = { fm.moveValue = it }, onEnd = { fireworksExplosionAnimator(fm) }, values = floatArrayOf(0f, pm.length))
+                    valueChange(delay = if (animatorType == AnimatorType.FIREWORKS_PATH) 0 else (1000..fireworksDuration).random(), interpolator = DecelerateInterpolator(), updateValue = { fm.moveValue = it }, onEnd = { fireworksExplosionAnimator(fm) }, values = floatArrayOf(0f, pm.length))
                 }
             }
         }
@@ -501,6 +563,7 @@ class FireworksView(context: Context, attrs: AttributeSet?) : View(context, attr
                         //烟花放完了
                         Log.d(TAG, "startSetOffFireworks: 烟花放完了")
                         fireworksManages.clear()
+                        animatorEndListener?.onFireworksAnimEnd()
                         startFireworksHeartPathAnimator()
                         return@valueChange
                     }
@@ -509,6 +572,7 @@ class FireworksView(context: Context, attrs: AttributeSet?) : View(context, attr
                     if (++finishCount >= firHeartPathSplitNumber) {
                         finishCount = 0
                         fireworksManages.clear()
+                        animatorEndListener?.onFireworksPathAnimEnd()
                         startFlameHeartAnimator()
                     }
                 }
@@ -538,7 +602,7 @@ class FireworksView(context: Context, attrs: AttributeSet?) : View(context, attr
         flameHeartPaint.textSize = 72f
         flameHeartPaint.style = Paint.Style.FILL_AND_STROKE
         flameHeartPaint.flags = Paint.ANTI_ALIAS_FLAG
-        measureTextWidth = flameHeartPaint.measureText(outputText)
+        measureTextWidth = flameHeartPaint.measureText(endText)
         flameHeartPaint.setShadowLayer(20f, 0f, 0f, Color.YELLOW)
         //getTextPath(文本,文本第一个索引，文本最后索引，输出起点X，输出起点Y，输出路径)
         //        flameHeartPaint.getTextPath(outputText, 0, outputText.length, width / 2f - measureTextWidth / 2, height / 2f, outputTextPath)
@@ -556,7 +620,7 @@ class FireworksView(context: Context, attrs: AttributeSet?) : View(context, attr
     private fun initSplitLine() {
         if (!::flameHeartPaint.isInitialized) initLinePaint()
         animatorType = AnimatorType.SEGMENTATION
-        splitBitmap = BitmapFactory.decodeResource(resources, R.mipmap.bg_fir)
+        splitBitmap = BitmapFactory.decodeResource(resources, R.mipmap.bg_fir_end)
         splitSrcRect = Rect(0, 0, splitBitmap.width, splitBitmap.height)
         splitDstRect = Rect(0, 0, width, height)
     }
@@ -596,7 +660,7 @@ class FireworksView(context: Context, attrs: AttributeSet?) : View(context, attr
      * @property moveValue MutableMap<Int, Float>
      * @property scaleValue MutableMap<Int, Float>
      */
-    inner class FireworksManage {
+    private inner class FireworksManage {
         lateinit var startPoint: Point  //(x=随机数,y=屏幕高度)
         lateinit var endPoint: Point //(x=起点X,y=距离屏幕高度随机)
         lateinit var movePath: Path //升起的移动路径
@@ -629,6 +693,42 @@ class FireworksView(context: Context, attrs: AttributeSet?) : View(context, attr
         FIREWORKS_PATH, //爱心烟花根据路径
         FLAME_HEART, //焰心
         SEGMENTATION //分割
+    }
+
+
+    interface AnimatorEndListener {
+        fun onTitleAnimEnd()
+        fun onContentAnimEnd()
+        fun onFireworksAnimEnd()
+        fun onFireworksPathAnimEnd()
+        fun onFlameHeartPathAnimEnd()
+        fun onSegmentationAnimEnd()
+    }
+
+    open class AnimatorEndListenerAdapter : AnimatorEndListener {
+        override fun onTitleAnimEnd() {
+            Log.d(TAG, "onTitleAnimEnd: ")
+        }
+
+        override fun onContentAnimEnd() {
+            Log.d(TAG, "onContentAnimEnd: ")
+        }
+
+        override fun onFireworksAnimEnd() {
+            Log.d(TAG, "onFireworksAnimEnd: ")
+        }
+
+        override fun onFireworksPathAnimEnd() {
+            Log.d(TAG, "onFireworksPathAnimEnd: ")
+        }
+
+        override fun onFlameHeartPathAnimEnd() {
+            Log.d(TAG, "onFlameHeartPathAnimEnd: ")
+        }
+
+        override fun onSegmentationAnimEnd() {
+            Log.d(TAG, "onSegmentationAnimEnd: ")
+        }
     }
 
     companion object {

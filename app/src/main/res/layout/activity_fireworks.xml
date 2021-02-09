@@ -1,19 +1,36 @@
 <?xml version="1.0" encoding="utf-8"?>
 <FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="#000"
     android:gravity="center"
     android:orientation="vertical"
     tools:context=".FireworksActivity">
 
+    <ImageView
+        android:id="@+id/iv"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:scaleType="centerCrop" />
 
     <com.hearthappy.starryskylib.FireworksView
         android:id="@+id/fv"
         android:layout_width="match_parent"
-        android:layout_height="match_parent" />
-    <!--<com.hearthappy.starryskylib.TestView
-        android:layout_width="match_parent"
-        android:layout_height="match_parent" />-->
+        android:layout_height="match_parent"
+        app:firAnimatorType="title"
+        app:firContentAnimDuration="10"
+        app:firContentLastLineNullCharNum="8"
+        app:firContentSize="48"
+        app:firContentText="@array/title_content"
+        app:firEndText="@string/title_last"
+        app:firEndTextVerticalOffset="-200"
+        app:firTextVerticalSpacing="36"
+        app:firTitleAnimDuration="6"
+        app:firTitleLastLineNullCharNum="2"
+        app:firTitleSize="72"
+        app:firTitleText="@array/title_first"
+        app:firTotalCount="30"
+        app:firTotalDuration="5"
+        app:firTruncationCount="16" />
 </FrameLayout>
