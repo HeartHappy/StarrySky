@@ -1,4 +1,4 @@
-package com.hearthappy.starryskylib.svg
+package com.hearthappy.fireworkslib.svg
 
 /**
  * Created Date 2021/1/29.

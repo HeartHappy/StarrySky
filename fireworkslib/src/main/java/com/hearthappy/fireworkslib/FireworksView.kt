@@ -1,4 +1,4 @@
-package com.hearthappy.starryskylib
+package com.hearthappy.fireworkslib
 
 import android.animation.ValueAnimator
 import android.content.Context
@@ -12,8 +12,8 @@ import android.view.animation.LinearInterpolator
 import androidx.annotation.FloatRange
 import androidx.core.animation.addListener
 import androidx.core.graphics.PathParser
-import com.hearthappy.starryskylib.svg.SvgOutputTools
-import com.hearthappy.starryskylib.svg.SvgPaths
+import com.hearthappy.fireworkslib.svg.SvgOutputTools
+import com.hearthappy.fireworkslib.svg.SvgPaths
 import java.util.*
 import java.util.concurrent.LinkedBlockingQueue
 
@@ -478,7 +478,7 @@ class FireworksView(context: Context, attrs: AttributeSet?) : View(context, attr
      */
     private fun startFireworksHeartPathAnimator() {
         animatorType = AnimatorType.FIREWORKS_PATH
-        firHeartPath = PathParser.createPathFromPathData(SvgPaths.heartPath3)
+        firHeartPath = PathParser.createPathFromPathData(SvgPaths.heartPath)
         firHeartShowPath = Path()
         firHeartPaint = Paint()
         firHeartPaint.isAntiAlias = true

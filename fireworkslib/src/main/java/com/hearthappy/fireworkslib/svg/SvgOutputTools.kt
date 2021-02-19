@@ -1,4 +1,4 @@
-package com.hearthappy.starryskylib.svg
+package com.hearthappy.fireworkslib.svg
 
 import android.graphics.*
 import android.util.Log

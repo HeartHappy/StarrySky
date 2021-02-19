@@ -1,4 +1,4 @@
-package com.hearthappy.starryskylib
+package com.hearthappy.fireworkslib
 
 import android.animation.ValueAnimator
 import android.content.Context
@@ -6,8 +6,8 @@ import android.graphics.*
 import android.util.AttributeSet
 import android.view.View
 import androidx.core.graphics.PathParser
-import com.hearthappy.starryskylib.svg.SvgOutputTools
-import com.hearthappy.starryskylib.svg.SvgPaths
+import com.hearthappy.fireworkslib.svg.SvgOutputTools
+import com.hearthappy.fireworkslib.svg.SvgPaths
 import kotlin.math.cos
 import kotlin.math.sin
 import kotlin.math.sqrt
@@ -40,7 +40,7 @@ class TestView(context: Context?, attrs: AttributeSet?) : View(context, attrs) {
     }
 
     override fun onDraw(canvas: Canvas) {
-        val path = PathParser.createPathFromPathData(SvgPaths.heartPath2)
+        val path = PathParser.createPathFromPathData(SvgPaths.heartPath)
         SvgOutputTools.drawPathCenterOutput(canvas, path, this, paint,scaleValue)
         /*for (i in 0..500) {
             val genPoint = genPoint()

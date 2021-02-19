@@ -1,3 +1,4 @@
+include ':fireworkslib'
 include ':starryskylib'
 include ':app'
 rootProject.name = "StarrySky"

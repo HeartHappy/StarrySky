@@ -15,7 +15,7 @@
         android:layout_height="match_parent"
         android:scaleType="centerCrop" />
 
-    <com.hearthappy.starryskylib.FireworksView
+    <com.hearthappy.fireworkslib.FireworksView
         android:id="@+id/fv"
         android:layout_width="match_parent"
         android:layout_height="match_parent"

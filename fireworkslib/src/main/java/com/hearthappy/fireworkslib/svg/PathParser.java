@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package com.hearthappy.starryskylib.svg;
+package com.hearthappy.fireworkslib.svg;
 
 import android.graphics.Path;
 import android.util.Log;

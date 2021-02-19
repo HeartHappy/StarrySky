@@ -1,10 +1,10 @@
-package com.hearthappy.starryskylib.player
+package com.hearthappy.fireworkslib.player
 
 import android.app.Service
 import android.content.Intent
 import android.media.MediaPlayer
 import android.os.IBinder
-import com.hearthappy.starryskylib.R
+import com.hearthappy.fireworkslib.R
 
 
 /**

@@ -7,8 +7,8 @@ import android.graphics.ColorMatrixColorFilter
 import android.os.Bundle
 import android.view.WindowManager
 import androidx.appcompat.app.AppCompatActivity
-import com.hearthappy.starryskylib.FireworksView
-import com.hearthappy.starryskylib.player.MusicServer
+import com.hearthappy.fireworkslib.FireworksView
+import com.hearthappy.fireworkslib.player.MusicServer
 import kotlinx.android.synthetic.main.activity_fireworks.*
 
 
