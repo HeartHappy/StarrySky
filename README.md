@@ -25,7 +25,7 @@
 ##### 详解：firAnimatorType属性分别有：title、content、fireworks、fireworks_path、flame_heart、segmentation。当firIsAssignAnim属性为false时：firAnimatorType指定动画播放结束后，会继续播放后面的其他动画；为true时：播放完当前动画直接停止
 
 #### 动画监听
-##### 1、实现全部监听
+##### 1、监听全部实现
 ```
 fv.animatorEndListener=object : FireworksView.AnimatorEndListener{
             override fun onTitleAnimEnd() {
@@ -57,7 +57,7 @@ fv.animatorEndListener=object : FireworksView.AnimatorEndListener{
             }
         }
 ```
-#####  2、指定实现监听
+#####  2、监听指定实现
 ````
 fv.animatorEndListener = object : FireworksView.AnimatorEndListenerAdapter() {
             override fun onContentAnimEnd() {
@@ -75,10 +75,10 @@ fv.animatorEndListener = object : FireworksView.AnimatorEndListenerAdapter() {
 #### StarrySkyView控件自定义属性
 | 属性名称 |作用说明| 值/类型 | 默认值 |
 | :------: | :------: | :------: | :--:|
-|planetNum|行星数量(行星，移动)| integer | 5 |
+|planetNum|行星数量(移动)| integer | 5 |
 |planetColor|行星颜色 | color |GRAY(灰色) |
 |planetRadius|行星半径 | float | 10 |
-|littleStarNum|恒星数量(恒星，不移动) | integer | 20 |
+|littleStarNum|恒星数量(不移动) | integer | 20 |
 |littleStarColor|恒星颜色 | color | GRAY(灰色) |
 |littleStarRadius|恒星半径 | float | 5 |
 |starLineColor|连接线颜色 | color | GRAY(灰色)|
