@@ -41,6 +41,8 @@ class FireworksView(context: Context, attrs: AttributeSet?) : View(context, attr
     private var truncationCount = 16f //贝塞尔曲线截断个数
     private var fireworksDuration = 30 * 1000L //烟花播放总时长，30秒结束
     private var animatorType = AnimatorType.TITLE //动画类型
+    private var firHeartCount = 1 //爱心烟花次数
+    private var firIsAssignAnim = false //是否指定动画
     var animatorEndListener: AnimatorEndListener? = null
 
     //共用属性
@@ -66,6 +68,7 @@ class FireworksView(context: Context, attrs: AttributeSet?) : View(context, attr
     private lateinit var firHeartPaint: Paint
     private lateinit var firHeartPathMeasure: PathMeasure
     private val firHeartPathSplitNumber = 10
+    private var firHeartFinishCount = 0 //爱心烟花完成次数
 
     //焰心升起
     private lateinit var flameHeartPaint: Paint
@@ -105,6 +108,8 @@ class FireworksView(context: Context, attrs: AttributeSet?) : View(context, attr
             titleAnimDuration = attributes.getInteger(R.styleable.FireworksView_firTitleAnimDuration, 5) * 1000L
             contentAnimDuration = attributes.getInteger(R.styleable.FireworksView_firContentAnimDuration, 10) * 1000L
             endTextVerticalOffset = attributes.getInteger(R.styleable.FireworksView_firEndTextVerticalOffset, 0)
+            firHeartCount = attributes.getInteger(R.styleable.FireworksView_firHeartCount, 1)
+            firIsAssignAnim = attributes.getBoolean(R.styleable.FireworksView_firIsAssignAnim, false)
             animatorType = toAnimatorType(attributes.getInt(R.styleable.FireworksView_firAnimatorType, 1))
             attributes.recycle()
         }
@@ -434,7 +439,9 @@ class FireworksView(context: Context, attrs: AttributeSet?) : View(context, attr
     private fun startTitleAnimator() {
         valueChange(titleAnimDuration, updateValue = { titleAlphaValue = it.toInt() }, onEnd = {
             animatorEndListener?.onTitleAnimEnd()
-            startContentAnimator()
+            if (!firIsAssignAnim) {
+                startContentAnimator()
+            }
         }, values = floatArrayOf(0f, 255f, 0f))
     }
 
@@ -447,7 +454,9 @@ class FireworksView(context: Context, attrs: AttributeSet?) : View(context, attr
             titleAlphaValue = it.toInt()
         }, onEnd = {
             animatorEndListener?.onContentAnimEnd()
-            startFireworksAnimator()
+            if (!firIsAssignAnim) {
+                startFireworksAnimator()
+            }
         }, values = floatArrayOf(0f, 255f, 0f))
     }
 
@@ -455,6 +464,7 @@ class FireworksView(context: Context, attrs: AttributeSet?) : View(context, attr
      * 启动烟花动画
      */
     private fun startFireworksAnimator() {
+        animatorEndListener?.onFireworksAnimStart()
         //计算出30组点的坐标
         for (i in 0 until totalCount) {
             val startX = (100 until width - 100).random()
@@ -541,9 +551,9 @@ class FireworksView(context: Context, attrs: AttributeSet?) : View(context, attr
      */
     private fun fireworksExplosionAnimator(fm: FireworksManage) {
         fm.fireworksState = FireworksState.Explosion
-        fm.firResBitmap?.let {
+        /*fm.firResBitmap?.let {
             fm.firPaint.maskFilter = BlurMaskFilter(it.width / 2f, BlurMaskFilter.Blur.NORMAL)
-        }
+        }*/
         //爆炸范围
         explosionRange = if (animatorType == AnimatorType.FIREWORKS_PATH) 2f else (1..2).random().toFloat()
         valueChange(interpolator = DecelerateInterpolator(), updateValue = { fm.scaleValue = it }, onEnd = { fireworksFadeOutAnimator(fm) }, values = floatArrayOf(0f, explosionRange))
@@ -573,7 +583,13 @@ class FireworksView(context: Context, attrs: AttributeSet?) : View(context, attr
                         finishCount = 0
                         fireworksManages.clear()
                         animatorEndListener?.onFireworksPathAnimEnd()
-                        startFlameHeartAnimator()
+                        if (firHeartCount == 1 || ++firHeartFinishCount == firHeartCount) {
+                            if (!firIsAssignAnim) {
+                                startFlameHeartAnimator()
+                            }
+                        } else {
+                            startFireworksHeartPathAnimator()
+                        }
                     }
                 }
                 else -> {
@@ -706,6 +722,7 @@ class FireworksView(context: Context, attrs: AttributeSet?) : View(context, attr
         fun onFlameHeartPathAnimEnd()
         fun onSegmentationAnimEnd()
         fun onOutputTextAnimEnd()
+        fun onFireworksAnimStart()
     }
 
     open class AnimatorEndListenerAdapter : AnimatorEndListener {
@@ -735,6 +752,10 @@ class FireworksView(context: Context, attrs: AttributeSet?) : View(context, attr
 
         override fun onOutputTextAnimEnd() {
             Log.d(TAG, "onOutputTextAnimEnd: ")
+        }
+
+        override fun onFireworksAnimStart() {
+            Log.d(TAG, "onFireworksAnimStart: ")
         }
     }
 

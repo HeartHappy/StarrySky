@@ -18,8 +18,8 @@ class FireworksActivity : AppCompatActivity() {
         loadImage(R.mipmap.bg_fir_title)
 
         fv.animatorEndListener = object : FireworksView.AnimatorEndListenerAdapter() {
-            override fun onContentAnimEnd() {
-                super.onContentAnimEnd()
+            override fun onFireworksAnimStart() {
+                super.onFireworksAnimStart()
                 loadImage(R.mipmap.bg_fir)
             }
         }

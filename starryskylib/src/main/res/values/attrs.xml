@@ -27,6 +27,8 @@
         <attr name="firContentText" format="reference" />
         <attr name="firEndText" format="string" />
         <attr name="firEndTextVerticalOffset" format="integer" />
+        <attr name="firHeartCount" format="integer" />
+        <attr name="firIsAssignAnim" format="boolean" />
         <attr name="firAnimatorType">
             <enum name="title" value="1" />
             <enum name="content" value="2" />
