@@ -15,7 +15,7 @@
         android:layout_height="match_parent"
         android:scaleType="centerCrop" />
 
-    <com.hearthappy.starryskylib.FireworksView
+    <com.hearthappy.fireworkslib.FireworksView
         android:id="@+id/fv"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
@@ -31,9 +31,8 @@
         app:firTitleLastLineNullCharNum="2"
         app:firTitleSize="72"
         app:firTitleText="@array/title_first"
-        app:firIsAssignAnim="false"
+        app:firTotalCount="200"
+        app:firTotalDuration="60"
         app:firHeartCount="3"
-        app:firTotalCount="10"
-        app:firTotalDuration="3"
         app:firTruncationCount="16" />
 </FrameLayout>
