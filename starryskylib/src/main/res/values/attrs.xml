@@ -1,9 +1,9 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
     <declare-styleable name="StarrySkyView">
-        <attr name="bigStarNum" format="integer" />
-        <attr name="bigStarColor" format="color" />
-        <attr name="bigStarRadius" format="float" />
+        <attr name="planetNum" format="integer" />
+        <attr name="planetColor" format="color" />
+        <attr name="planetRadius" format="float" />
         <attr name="littleStarNum" format="integer" />
         <attr name="littleStarColor" format="color" />
         <attr name="littleStarRadius" format="float" />
