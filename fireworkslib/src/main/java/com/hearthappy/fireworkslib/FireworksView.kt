@@ -464,7 +464,6 @@ class FireworksView(context: Context, attrs: AttributeSet?) : View(context, attr
      * 启动烟花动画
      */
     private fun startFireworksAnimator() {
-        animatorEndListener?.onFireworksAnimStart()
         //计算出30组点的坐标
         for (i in 0 until totalCount) {
             val startX = (100 until width - 100).random()
@@ -722,7 +721,6 @@ class FireworksView(context: Context, attrs: AttributeSet?) : View(context, attr
         fun onFlameHeartPathAnimEnd()
         fun onSegmentationAnimEnd()
         fun onOutputTextAnimEnd()
-        fun onFireworksAnimStart()
     }
 
     open class AnimatorEndListenerAdapter : AnimatorEndListener {
@@ -752,10 +750,6 @@ class FireworksView(context: Context, attrs: AttributeSet?) : View(context, attr
 
         override fun onOutputTextAnimEnd() {
             Log.d(TAG, "onOutputTextAnimEnd: ")
-        }
-
-        override fun onFireworksAnimStart() {
-            Log.d(TAG, "onFireworksAnimStart: ")
         }
     }
 

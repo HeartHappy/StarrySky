@@ -2,6 +2,6 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
     package="com.hearthappy.fireworkslib">
     <application>
-        <service android:name=".player.MusicServer"/>
+        <service android:name="com.hearthappy.starrysky.player.MusicServer"/>
     </application>
 </manifest>

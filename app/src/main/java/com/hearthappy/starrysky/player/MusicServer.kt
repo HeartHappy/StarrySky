@@ -1,4 +1,4 @@
-package com.hearthappy.fireworkslib.player
+package com.hearthappy.starrysky.player
 
 import android.app.Service
 import android.content.Intent
