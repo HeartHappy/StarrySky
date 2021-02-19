@@ -1,13 +1,16 @@
 package com.hearthappy.starrysky
 
 import android.animation.ObjectAnimator
+import android.content.Intent
 import android.graphics.ColorMatrix
 import android.graphics.ColorMatrixColorFilter
 import android.os.Bundle
 import android.view.WindowManager
 import androidx.appcompat.app.AppCompatActivity
 import com.hearthappy.starryskylib.FireworksView
+import com.hearthappy.starryskylib.player.MusicServer
 import kotlinx.android.synthetic.main.activity_fireworks.*
+
 
 class FireworksActivity : AppCompatActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -22,7 +25,15 @@ class FireworksActivity : AppCompatActivity() {
                 super.onContentAnimEnd()
                 loadImage(R.mipmap.bg_fir)
             }
+
+            override fun onOutputTextAnimEnd() {
+                super.onOutputTextAnimEnd()
+                val intent = Intent(this@FireworksActivity, MusicServer::class.java)
+                stopService(intent)
+            }
         }
+        val intent = Intent(this@FireworksActivity, MusicServer::class.java)
+        startService(intent)
     }
 
     private fun loadImage(i: Int) {
@@ -34,5 +45,11 @@ class FireworksActivity : AppCompatActivity() {
         val colorMatrix = ColorMatrix()
         colorMatrix.setSaturation(0.3f)
         iv.colorFilter = ColorMatrixColorFilter(colorMatrix)
+    }
+
+    override fun onStop() {
+        super.onStop()
+        val intent = Intent(this@FireworksActivity, MusicServer::class.java)
+        stopService(intent)
     }
 }

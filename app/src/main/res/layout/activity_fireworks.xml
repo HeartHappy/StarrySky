@@ -6,6 +6,7 @@
     android:layout_height="match_parent"
     android:gravity="center"
     android:orientation="vertical"
+    android:keepScreenOn="true"
     tools:context=".FireworksActivity">
 
     <ImageView
@@ -30,7 +31,7 @@
         app:firTitleLastLineNullCharNum="2"
         app:firTitleSize="72"
         app:firTitleText="@array/title_first"
-        app:firTotalCount="100"
-        app:firTotalDuration="30"
+        app:firTotalCount="200"
+        app:firTotalDuration="60"
         app:firTruncationCount="16" />
 </FrameLayout>

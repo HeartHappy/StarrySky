@@ -587,7 +587,9 @@ class FireworksView(context: Context, attrs: AttributeSet?) : View(context, attr
      */
     private fun splitOutputTextAnimator() {
         initOutputText()
-        valueChange(flameHeartAnimDuration, updateValue = { outputTextMoveValue = it }, values = floatArrayOf(0f, outputPathMeasure.length))
+        valueChange(flameHeartAnimDuration, updateValue = { outputTextMoveValue = it },onEnd = {
+            animatorEndListener?.onOutputTextAnimEnd()
+        }, values = floatArrayOf(0f, outputPathMeasure.length))
     }
 
     /**
@@ -703,6 +705,7 @@ class FireworksView(context: Context, attrs: AttributeSet?) : View(context, attr
         fun onFireworksPathAnimEnd()
         fun onFlameHeartPathAnimEnd()
         fun onSegmentationAnimEnd()
+        fun onOutputTextAnimEnd()
     }
 
     open class AnimatorEndListenerAdapter : AnimatorEndListener {
@@ -728,6 +731,10 @@ class FireworksView(context: Context, attrs: AttributeSet?) : View(context, attr
 
         override fun onSegmentationAnimEnd() {
             Log.d(TAG, "onSegmentationAnimEnd: ")
+        }
+
+        override fun onOutputTextAnimEnd() {
+            Log.d(TAG, "onOutputTextAnimEnd: ")
         }
     }
 
