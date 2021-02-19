@@ -30,7 +30,7 @@
         app:firTitleLastLineNullCharNum="2"
         app:firTitleSize="72"
         app:firTitleText="@array/title_first"
-        app:firTotalCount="30"
-        app:firTotalDuration="5"
+        app:firTotalCount="100"
+        app:firTotalDuration="30"
         app:firTruncationCount="16" />
 </FrameLayout>
