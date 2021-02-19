@@ -33,5 +33,6 @@
         app:firTitleText="@array/title_first"
         app:firTotalCount="200"
         app:firTotalDuration="60"
+        app:firHeartCount="3"
         app:firTruncationCount="16" />
 </FrameLayout>
