@@ -27,7 +27,7 @@
 #### 动画监听
 ##### 1、实现全部监听
 ```
-fv.animatorEndListener=object :FireworksView.AnimatorEndListener{
+fv.animatorEndListener=object : FireworksView.AnimatorEndListener{
             override fun onTitleAnimEnd() {
                 //标题动画结束
             }
@@ -78,11 +78,9 @@ fv.animatorEndListener = object : FireworksView.AnimatorEndListenerAdapter() {
 |planetNum|行星数量(行星，移动)| integer | 5 |
 |planetColor|行星颜色 | color |GRAY(灰色) |
 |planetRadius|行星半径 | float | 10 |
-
 |littleStarNum|恒星数量(恒星，不移动) | integer | 20 |
 |littleStarColor|恒星颜色 | color | GRAY(灰色) |
-|littleStarRadius|恒星半径 | float |5 |
-
+|littleStarRadius|恒星半径 | float | 5 |
 |starLineColor|连接线颜色 | color | GRAY(灰色)|
 |starColorChange|是否支持颜色改变 | boolean | false |
 |isCancelLine|是否取消连接线 | boolean | false |
